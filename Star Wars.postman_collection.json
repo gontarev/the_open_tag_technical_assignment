@@ -1,0 +1,316 @@
+{
+	"info": {
+		"_postman_id": "296eafde-dfdd-4312-9a45-49e706f100e5",
+		"name": "Star Wars",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GetFirstFilm",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Deleting of \"speciesList\" variable to be sure that it wouldn't keep an old value\r",
+							"pm.collectionVariables.unset(\"speciesList\");\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"A New Hope\");\r",
+							"});\r",
+							"\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"\r",
+							"//Creation of variable to store an id of the first film\r",
+							"pm.collectionVariables.set(\"newHopeId\", jsonData.data.allFilms.films[0].id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "{\r\n  allFilms(first:1){\r\n    films{\r\n      id\r\n      title\r\n    }\r\n  }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://swapi-graphql.netlify.app/.netlify/functions/index",
+					"protocol": "https",
+					"host": [
+						"swapi-graphql",
+						"netlify",
+						"app"
+					],
+					"path": [
+						".netlify",
+						"functions",
+						"index"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetFirstFilmSpecies",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"});\r",
+							"\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"nameArray = [];\r",
+							"\r",
+							"for (var i=0; i<jsonData.data.film.speciesConnection.species.length; i++)\r",
+							"{\r",
+							"    var name = jsonData.data.film.speciesConnection.species[i].name;\r",
+							"    nameArray.push(`${name}`);\r",
+							"    if (jsonData.data.film.speciesConnection.species[i].name == \"Droid\")\r",
+							"    //Creation of variable to store an id of the Droid\r",
+							"    {pm.collectionVariables.set(\"speciesDriodId\", jsonData.data.film.speciesConnection.species[i].id);}\r",
+							"}\r",
+							"\r",
+							"//Creation of variable to store a species list of the first film. Must exist at the end of the test run\r",
+							"pm.collectionVariables.set(\"speciesList\", nameArray);\r",
+							"//Just to be sure\r",
+							"console.info(\"The list of species for A New Hope: \" + pm.collectionVariables.get(\"speciesList\"));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"strictSSL": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "{\r\n  film(id: \"{{newHopeId}}\"){\r\n    speciesConnection{\r\n      species{\r\n        name\r\n        id\r\n      }\r\n    }\r\n  }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://swapi-graphql.netlify.app/.netlify/functions/index",
+					"protocol": "https",
+					"host": [
+						"swapi-graphql",
+						"netlify",
+						"app"
+					],
+					"path": [
+						".netlify",
+						"functions",
+						"index"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetPersonDroid",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "{\r\n  person(id: \"{{speciesDriodId}}\"){\r\n    name\r\n    birthYear\r\n    homeworld {\r\n      name\r\n    }\r\n    eyeColor\r\n  }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://swapi-graphql.netlify.app/.netlify/functions/index",
+					"protocol": "https",
+					"host": [
+						"swapi-graphql",
+						"netlify",
+						"app"
+					],
+					"path": [
+						".netlify",
+						"functions",
+						"index"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetCharactersInFilm",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"id\");\r",
+							"});\r",
+							"\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"// Just to be sure\r",
+							"console.log(jsonData.data.film.characterConnection.characters[3].id)\r",
+							"//Creation of variable to keep the id of the fourth person in the first film\r",
+							"pm.collectionVariables.set(\"fourthPersonId\", jsonData.data.film.characterConnection.characters[3].id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "{\r\n  film(id: \"{{newHopeId}}\"){\r\n    characterConnection{\r\n      totalCount\r\n      characters{\r\n        id\r\n        name\r\n        gender\r\n      }\r\n    }\r\n  }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://swapi-graphql.netlify.app/.netlify/functions/index",
+					"protocol": "https",
+					"host": [
+						"swapi-graphql",
+						"netlify",
+						"app"
+					],
+					"path": [
+						".netlify",
+						"functions",
+						"index"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetPersonUniqueId4",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"});\r",
+							"\r",
+							"//Clearing the variables that no longer needed for this run. Also to be sure that at the new run they wouldn't keep an old values\r",
+							"pm.collectionVariables.unset(\"fourthPersonId\");\r",
+							"pm.collectionVariables.unset(\"speciesDriodId\");\r",
+							"pm.collectionVariables.unset(\"newHopeId\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "{\r\n  person(id: \"{{fourthPersonId}}\"){\r\n    name\r\n    birthYear\r\n    homeworld{\r\n      name\r\n    }\r\n    eyeColor\r\n    starshipConnection{\r\n      starships{\r\n        name\r\n      }\r\n    }\r\n  }\r\n}",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "https://swapi-graphql.netlify.app/.netlify/functions/index",
+					"protocol": "https",
+					"host": [
+						"swapi-graphql",
+						"netlify",
+						"app"
+					],
+					"path": [
+						".netlify",
+						"functions",
+						"index"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "speciesList",
+			"value": ""
+		}
+	]
+}
